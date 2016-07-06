@@ -1,0 +1,11 @@
+{
+  "isLightSource": true,
+  "size": 0.2,
+  "parts": [
+    {
+      "name": "body",
+      "color": "ffffff",
+      "alpha": 1
+    }
+  ]
+}

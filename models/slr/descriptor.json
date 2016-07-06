@@ -1,0 +1,359 @@
+{
+  "parts": [
+    {
+      "name": "body",
+      "color": "f0f8ff"
+    },
+    {
+      "name": "body_flashlight_L",
+      "textureID": "badging",
+      "alpha": 1
+    },
+    {
+      "name": "body_flashlight_R",
+      "textureID": "badging",
+      "alpha": 1
+    },
+    {
+      "name": "body_glass_rear",
+      "color": "ffffff",
+      "alpha": 0.5
+    },
+    {
+      "name": "body_patch",
+      "color": "010101"
+    },
+    {
+      "name": "body_strip",
+      "textureID": "doorline",
+      "alpha": 1
+    },
+    {
+      "name": "bottom_strip",
+      "textureID": "doorline",
+      "alpha": 1
+    },
+    {
+      "name": "brake_FL",
+      "textureID": "misc"
+    },
+    {
+      "name": "brake_FR",
+      "textureID": "misc"
+    },
+    {
+      "name": "brake_RL",
+      "textureID": "misc"
+    },
+    {
+      "name": "brake_RR",
+      "textureID": "misc"
+    },
+    {
+      "name": "breakdisk_FL",
+      "textureID": "breakdisk",
+      "alpha": 1
+    },
+    {
+      "name": "breakdisk_FL_rect",
+      "textureID": "breakdisk",
+      "alpha": 1
+    },
+    {
+      "name": "breakdisk_FR",
+      "textureID": "breakdisk",
+      "alpha": 1
+    },
+    {
+      "name": "breakdisk_FR_rect",
+      "textureID": "breakdisk",
+      "alpha": 1
+    },
+    {
+      "name": "breakdisk_RL",
+      "textureID": "breakdisk",
+      "alpha": 1
+    },
+    {
+      "name": "breakdisk_RL_rect",
+      "textureID": "breakdisk",
+      "alpha": 1
+    },
+    {
+      "name": "breakdisk_RR",
+      "textureID": "breakdisk",
+      "alpha": 1
+    },
+    {
+      "name": "breakdisk_RR_rect",
+      "textureID": "breakdisk",
+      "alpha": 1
+    },
+    {
+      "name": "bumper_rear",
+      "color": "f0f8ff"
+    },
+    {
+      "name": "bumper_small_parts",
+      "color": "f0f8ff"
+    },
+    {
+      "name": "bumper_strip",
+      "textureID": "doorline",
+      "alpha": 1
+    },
+    {
+      "name": "disk_FR",
+      "textureID": "rim"
+    },
+    {
+      "name": "disk_RL",
+      "textureID": "rim"
+    },
+    {
+      "name": "disk_RR",
+      "textureID": "rim"
+    },
+    {
+      "name": "disk_FL",
+      "textureID": "rim"
+    },
+    {
+      "name": "door_L",
+      "color": "f0f8ff"
+    },
+    {
+      "name": "door_L_patch_1",
+      "textureID": "misc"
+    },
+    {
+      "name": "door_L_patch_2",
+      "textureID": "misc"
+    },
+    {
+      "name": "door_line",
+      "textureID": "doorline",
+      "alpha": 1
+    },
+    {
+      "name": "door_R",
+      "color": "f0f8ff"
+    },
+    {
+      "name": "door_R_patch_1",
+      "textureID": "misc"
+    },
+    {
+      "name": "door_R_patch_2",
+      "textureID": "misc"
+    },
+    {
+      "name": "exhaust",
+      "color": "f0f8ff"
+    },
+    {
+      "name": "exhaust_inset",
+      "textureID": "misc"
+    },
+    {
+      "name": "floor",
+      "textureID": "floor"
+    },
+    {
+      "name": "front_bumper",
+      "color": "f0f8ff"
+    },
+    {
+      "name": "front_bumper_back",
+      "textureID": "misc"
+    },
+    {
+      "name": "front_bumper_patch",
+      "color": "010101"
+    },
+    {
+      "name": "front_glass_strip",
+      "color": "2e2e2e"
+    },
+    {
+      "name": "front_lid",
+      "color": "f0f8ff"
+    },
+    {
+      "name": "front_lid_patch",
+      "color": "010101"
+    },
+    {
+      "name": "front_symbol_back",
+      "textureID": "front_symbol_back",
+      "alpha": 1
+    },
+    {
+      "name": "front_window",
+      "color": "ffffff",
+      "alpha": 0.5
+    },
+    {
+      "name": "headlight_L",
+      "textureID": "headlight"
+    },
+    {
+      "name": "headlight_L_glass",
+      "color": "ffffff",
+      "alpha": "0.4"
+    },
+    {
+      "name": "headlight_R",
+      "textureID": "headlight"
+    },
+    {
+      "name": "headlight_R_glass",
+      "color": "ffffff",
+      "alpha": "0.4"
+    },
+    {
+      "name": "interior",
+      "textureID": "interior"
+    },
+    {
+      "name": "label_L",
+      "textureID": "badging",
+      "alpha": 1
+    },
+    {
+      "name": "label_R",
+      "textureID": "badging",
+      "alpha": 1
+    },
+    {
+      "name": "mirror_L_body",
+      "color": "101010"
+    },
+    {
+      "name": "mirror_L_glass",
+      "textureID": "misc"
+    },
+    {
+      "name": "mirror_R_body",
+      "color": "101010"
+    },
+    {
+      "name": "mirror_R_glass",
+      "textureID": "misc"
+    },
+    {
+      "name": "rear_bumper",
+      "textureID": "misc"
+    },
+    {
+      "name": "rear_label",
+      "textureID": "badging",
+      "alpha": 1
+    },
+    {
+      "name": "rear_lid",
+      "color": "f0f8ff"
+    },
+    {
+      "name": "rear_light_glass_L",
+      "color": "ff0000",
+      "alpha": 0.35
+    },
+    {
+      "name": "rear_light_glass_R",
+      "color": "ff0000",
+      "alpha": 0.35
+    },
+    {
+      "name": "rear_light_L",
+      "textureID": "breaklight"
+    },
+    {
+      "name": "rear_light_R",
+      "textureID": "breaklight"
+    },
+    {
+      "name": "rear_symbol",
+      "textureID": "badging",
+      "alpha": 1
+    },
+    {
+      "name": "rear_window_inset_L",
+      "color": "606060"
+    },
+    {
+      "name": "rear_window_inset_R",
+      "color": "606060"
+    },
+    {
+      "name": "rear_window_L",
+      "color": "ffffff",
+      "alpha": 0.5
+    },
+    {
+      "name": "rear_window_R",
+      "color": "ffffff",
+      "alpha": 0.5
+    },
+    {
+      "name": "rerar_window_strip",
+      "color": "2b2828"
+    },
+    {
+      "name": "roof",
+      "color": "f0f8ff"
+    },
+    {
+      "name": "side_bars",
+      "color": "f0f8ff"
+    },
+    {
+      "name": "side_light_L",
+      "textureID": "badging",
+      "alpha": 1
+    },
+    {
+      "name": "side_light_R",
+      "textureID": "badging",
+      "alpha": 1
+    },
+    {
+      "name": "sides_patch",
+      "color": "010101"
+    },
+    {
+      "name": "stop_signal_middle",
+      "textureID": "breaklight"
+    },
+    {
+      "name": "tire_FL",
+      "textureID": "tire"
+    },
+    {
+      "name": "tire_FR",
+      "textureID": "tire"
+    },
+    {
+      "name": "tire_RL",
+      "textureID": "tire"
+    },
+    {
+      "name": "tire_RR",
+      "textureID": "tire"
+    },
+    {
+      "name": "window_L",
+      "color": "ffffff",
+      "alpha": 0.5
+    },
+    {
+      "name": "window_R",
+      "color": "ffffff",
+      "alpha": 0.5
+    },
+    {
+      "name": "wiper_and_beveal",
+      "textureID": "misc"
+    }
+  ]
+}
