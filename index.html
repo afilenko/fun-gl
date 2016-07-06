@@ -1,57 +1,508 @@
-<!DOCTYPE html>
-<html lang="en-us">
-  <head>
-    <meta charset="UTF-8">
-    <title>Fun-gl by afilenko</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
-    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
-    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
-  </head>
-  <body>
-    <section class="page-header">
-      <h1 class="project-name">Fun-gl</h1>
-      <h2 class="project-tagline"></h2>
-      <a href="https://github.com/afilenko/fun-gl" class="btn">View on GitHub</a>
-      <a href="https://github.com/afilenko/fun-gl/zipball/master" class="btn">Download .zip</a>
-      <a href="https://github.com/afilenko/fun-gl/tarball/master" class="btn">Download .tar.gz</a>
-    </section>
+<html>
+<head>
+    <title>FunGL</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <script src="js/lib/jquery-3.0.0.min.js" type="text/javascript"></script>
+    <script src="js/utils.js" type="text/javascript"></script>
+    <script src="js/camera.js" type="text/javascript"></script>
+    <script src="js/interactions.js" type="text/javascript"></script>
+    <script src="js/init.js" type="text/javascript"></script>
+    <script src="js/main.js" type="text/javascript"></script>
+    <script src="js/renderer.js" type="text/javascript"></script>
+    <script src="js/physics.js" type="text/javascript"></script>
+    <script src="js/scene-loader.js" type="text/javascript"></script>
 
-    <section class="main-content">
-      <h3>
-<a id="welcome-to-github-pages" class="anchor" href="#welcome-to-github-pages" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Welcome to GitHub Pages.</h3>
+    <script src="js/lib/sylvester.js" type="text/javascript"></script>
+    <script src="js/lib/gl-utils.js" type="text/javascript"></script>
 
-<p>This automatic page generator is the easiest way to create beautiful pages for all of your projects. Author your page content here <a href="https://guides.github.com/features/mastering-markdown/">using GitHub Flavored Markdown</a>, select a template crafted by a designer, and publish. After your page is generated, you can check out the new <code>gh-pages</code> branch locally. If you’re using GitHub Desktop, simply sync your repository and you’ll see the new branch.</p>
+    <style type="text/css">
+        body, html {
+            margin: 0;
+            padding: 0;
+        }
 
-<h3>
-<a id="designer-templates" class="anchor" href="#designer-templates" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Designer Templates</h3>
+        #hud {
+            position: absolute;
+            bottom: 20px;
+            color: #fff121;
+        }
+    </style>
 
-<p>We’ve crafted some handsome templates for you to use. Go ahead and click 'Continue to layouts' to browse through them. You can easily go back to edit your page before publishing. After publishing your page, you can revisit the page generator and switch to another theme. Your Page content will be preserved.</p>
+    <!-- Fragment shader program -->
 
-<h3>
-<a id="creating-pages-manually" class="anchor" href="#creating-pages-manually" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Creating pages manually</h3>
+    <script id="shader-fs" type="x-shader/x-fragment">
+        precision mediump float;
 
-<p>If you prefer to not use the automatic generator, push a branch named <code>gh-pages</code> to your repository to create a page manually. In addition to supporting regular HTML content, GitHub Pages support Jekyll, a simple, blog aware static site generator. Jekyll makes it easy to create site-wide headers and footers without having to copy them across every page. It also offers intelligent blog support and other advanced templating features.</p>
+        uniform sampler2D uSampler;
+        uniform bool uApplyLighting;
+        uniform bool uIsLightSource;
+        uniform bool uUseSimpleLightning;
+        uniform mediump int uDynamicLightSourcesCount;
 
-<h3>
-<a id="authors-and-contributors" class="anchor" href="#authors-and-contributors" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Authors and Contributors</h3>
+        varying highp vec2 vTextureCoord;
+        varying vec3 vNormal;
+        varying vec3 vSurfaceToLight;
+        varying vec3 vSurfaceToOrbLight;
+        varying vec3 vOrbLightWorldPositionOuter;
+        varying vec3 vLightSourcesWorldPositions[16];
+        varying float vWeightedOrbLight;
 
-<p>You can <a href="https://help.github.com/articles/basic-writing-and-formatting-syntax/#mentioning-users-and-teams" class="user-mention">@mention</a> a GitHub username to generate a link to their profile. The resulting <code>&lt;a&gt;</code> element will link to the contributor’s GitHub Profile. For example: In 2007, Chris Wanstrath (<a href="https://github.com/defunkt" class="user-mention">@defunkt</a>), PJ Hyett (<a href="https://github.com/pjhyett" class="user-mention">@pjhyett</a>), and Tom Preston-Werner (<a href="https://github.com/mojombo" class="user-mention">@mojombo</a>) founded GitHub.</p>
+        void main(void) {
+            mediump vec4 texelColor = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t));
+            vec3 normal = normalize(vNormal);
+            vec3 surfaceToLightDirection = normalize(vSurfaceToLight);
+            float light = dot(normal, surfaceToLightDirection); // ambient for
+            gl_FragColor = vec4(texelColor.rgb, texelColor.a);
 
-<h3>
-<a id="support-or-contact" class="anchor" href="#support-or-contact" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Support or Contact</h3>
+            if (uIsLightSource) {
+                float lightDistance1 = length(vOrbLightWorldPositionOuter);
+                float lightDistance2 = length(vSurfaceToOrbLight);
+                float resultingLight = light / (lightDistance1 / 2.0);
+                float orbLight = dot(normal, normalize(vSurfaceToOrbLight));
 
-<p>Having trouble with Pages? Check out our <a href="https://help.github.com/pages">documentation</a> or <a href="https://github.com/contact">contact support</a> and we’ll help you sort it out.</p>
+                if (orbLight > 0.0) {
+                    resultingLight += orbLight * (1.0 / (lightDistance2 * lightDistance2));
+                }
+                float maxLight = 2.0;
+                if (resultingLight > maxLight) {
+                    resultingLight = maxLight;
+                }
 
-      <footer class="site-footer">
-        <span class="site-footer-owner"><a href="https://github.com/afilenko/fun-gl">Fun-gl</a> is maintained by <a href="https://github.com/afilenko">afilenko</a>.</span>
+                gl_FragColor = vec4(texelColor.rgb, resultingLight);
+                gl_FragColor.rgb *= 0.05 + resultingLight; // 0.05 ambient for orbs
+            }
+            else if (uApplyLighting) {
+                float lightDistance1 = length(vSurfaceToLight);
+                if (lightDistance1 < 2.0) {
+                    lightDistance1 = 2.0;
+                }
 
-        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
-      </footer>
+                float resultingLight = light / (lightDistance1 / 2.0);
 
-    </section>
+                if (!uUseSimpleLightning) {
+                    vec3 lightSourcePosition;
+                    float orbLightDistance;
+                    float orbLight;
 
-  
-  </body>
+                    if (uDynamicLightSourcesCount > 0) {
+                        lightSourcePosition = vLightSourcesWorldPositions[0];
+                        orbLightDistance = length(lightSourcePosition);
+                        if (orbLightDistance < 1.0) {
+                            orbLight = dot(normal, normalize(lightSourcePosition));
+                            if (orbLight  > 0.0) {
+                                resultingLight += orbLight * (1.0 - orbLightDistance);
+                            }
+                        }
+                    }
+
+                    if (uDynamicLightSourcesCount > 1) {
+                        lightSourcePosition = vLightSourcesWorldPositions[1];
+                        orbLightDistance = length(lightSourcePosition);
+                        if (orbLightDistance < 1.0) {
+                            orbLight = dot(normal, normalize(lightSourcePosition));
+                            if (orbLight  > 0.0) {
+                                resultingLight += orbLight * (1.0 - orbLightDistance);
+                            }
+                        }
+                    }
+
+                    if (uDynamicLightSourcesCount > 2) {
+                        lightSourcePosition = vLightSourcesWorldPositions[2];
+                        orbLightDistance = length(lightSourcePosition);
+                        if (orbLightDistance < 1.0) {
+                            orbLight = dot(normal, normalize(lightSourcePosition));
+                            if (orbLight  > 0.0) {
+                                resultingLight += orbLight * (1.0 - orbLightDistance);
+                            }
+                        }
+                    }
+
+                    if (uDynamicLightSourcesCount > 3) {
+                        lightSourcePosition = vLightSourcesWorldPositions[3];
+                        orbLightDistance = length(lightSourcePosition);
+                        if (orbLightDistance < 1.0) {
+                            orbLight = dot(normal, normalize(lightSourcePosition));
+                            if (orbLight  > 0.0) {
+                                resultingLight += orbLight * (1.0 - orbLightDistance);
+                            }
+                        }
+                    }
+
+                    if (uDynamicLightSourcesCount > 4) {
+                        lightSourcePosition = vLightSourcesWorldPositions[4];
+                        orbLightDistance = length(lightSourcePosition);
+                        if (orbLightDistance < 1.0) {
+                            orbLight = dot(normal, normalize(lightSourcePosition));
+                            if (orbLight  > 0.0) {
+                                resultingLight += orbLight * (1.0 - orbLightDistance);
+                            }
+                        }
+                    }
+
+                    if (uDynamicLightSourcesCount > 5) {
+                        lightSourcePosition = vLightSourcesWorldPositions[5];
+                        orbLightDistance = length(lightSourcePosition);
+                        if (orbLightDistance < 1.0) {
+                            orbLight = dot(normal, normalize(lightSourcePosition));
+                            if (orbLight  > 0.0) {
+                                resultingLight += orbLight * (1.0 - orbLightDistance);
+                            }
+                        }
+                    }
+
+                    if (uDynamicLightSourcesCount > 6) {
+                        lightSourcePosition = vLightSourcesWorldPositions[6];
+                        orbLightDistance = length(lightSourcePosition);
+                        if (orbLightDistance < 1.0) {
+                            orbLight = dot(normal, normalize(lightSourcePosition));
+                            if (orbLight  > 0.0) {
+                                resultingLight += orbLight * (1.0 - orbLightDistance);
+                            }
+                        }
+                    }
+
+                    if (uDynamicLightSourcesCount > 7) {
+                        lightSourcePosition = vLightSourcesWorldPositions[7];
+                        orbLightDistance = length(lightSourcePosition);
+                        if (orbLightDistance < 1.0) {
+                            orbLight = dot(normal, normalize(lightSourcePosition));
+                            if (orbLight  > 0.0) {
+                                resultingLight += orbLight * (1.0 - orbLightDistance);
+                            }
+                        }
+                    }
+
+                    if (uDynamicLightSourcesCount > 8) {
+                        lightSourcePosition = vLightSourcesWorldPositions[8];
+                        orbLightDistance = length(lightSourcePosition);
+                        if (orbLightDistance < 1.0) {
+                            orbLight = dot(normal, normalize(lightSourcePosition));
+                            if (orbLight  > 0.0) {
+                                resultingLight += orbLight * (1.0 - orbLightDistance);
+                            }
+                        }
+                    }
+
+                    if (uDynamicLightSourcesCount > 9) {
+                        lightSourcePosition = vLightSourcesWorldPositions[9];
+                        orbLightDistance = length(lightSourcePosition);
+                        if (orbLightDistance < 1.0) {
+                            orbLight = dot(normal, normalize(lightSourcePosition));
+                            if (orbLight  > 0.0) {
+                                resultingLight += orbLight * (1.0 - orbLightDistance);
+                            }
+                        }
+                    }
+
+                    if (uDynamicLightSourcesCount > 10) {
+                        lightSourcePosition = vLightSourcesWorldPositions[10];
+                        orbLightDistance = length(lightSourcePosition);
+                        if (orbLightDistance < 1.0) {
+                            orbLight = dot(normal, normalize(lightSourcePosition));
+                            if (orbLight  > 0.0) {
+                                resultingLight += orbLight * (1.0 - orbLightDistance);
+                            }
+                        }
+                    }
+
+                    if (uDynamicLightSourcesCount > 11) {
+                        lightSourcePosition = vLightSourcesWorldPositions[11];
+                        orbLightDistance = length(lightSourcePosition);
+                        if (orbLightDistance < 1.0) {
+                            orbLight = dot(normal, normalize(lightSourcePosition));
+                            if (orbLight  > 0.0) {
+                                resultingLight += orbLight * (1.0 - orbLightDistance);
+                            }
+                        }
+                    }
+
+                    if (uDynamicLightSourcesCount > 12) {
+                        lightSourcePosition = vLightSourcesWorldPositions[12];
+                        orbLightDistance = length(lightSourcePosition);
+                        if (orbLightDistance < 1.0) {
+                            orbLight = dot(normal, normalize(lightSourcePosition));
+                            if (orbLight  > 0.0) {
+                                resultingLight += orbLight * (1.0 - orbLightDistance);
+                            }
+                        }
+                    }
+
+                    if (uDynamicLightSourcesCount > 13) {
+                        lightSourcePosition = vLightSourcesWorldPositions[13];
+                        orbLightDistance = length(lightSourcePosition);
+                        if (orbLightDistance < 1.0) {
+                            orbLight = dot(normal, normalize(lightSourcePosition));
+                            if (orbLight  > 0.0) {
+                                resultingLight += orbLight * (1.0 - orbLightDistance);
+                            }
+                        }
+                    }
+
+                    if (uDynamicLightSourcesCount > 14) {
+                        lightSourcePosition = vLightSourcesWorldPositions[14];
+                        orbLightDistance = length(lightSourcePosition);
+                        if (orbLightDistance < 1.0) {
+                            orbLight = dot(normal, normalize(lightSourcePosition));
+                            if (orbLight  > 0.0) {
+                                resultingLight += orbLight * (1.0 - orbLightDistance);
+                            }
+                        }
+                    }
+
+                    if (uDynamicLightSourcesCount > 15) {
+                        lightSourcePosition = vLightSourcesWorldPositions[15];
+                        orbLightDistance = length(lightSourcePosition);
+                        if (orbLightDistance < 1.0) {
+                            orbLight = dot(normal, normalize(lightSourcePosition));
+                            if (orbLight  > 0.0) {
+                                resultingLight += orbLight * (1.0 - orbLightDistance);
+                            }
+                        }
+                    }
+                }
+                else {
+                    resultingLight += vWeightedOrbLight;
+                }
+                float maxLight = 1.0;
+                resultingLight += 0.1; // 0.1 ambient
+                if (resultingLight > maxLight) {
+                    resultingLight = maxLight;
+                }
+                gl_FragColor.rgb *= resultingLight;
+            }
+        }
+    </script>
+
+    <!-- Vertex shader program -->
+
+    <script id="shader-vs" type="x-shader/x-vertex">
+        attribute highp vec3 aVertexNormal;
+        attribute highp vec3 aVertexPosition;
+        attribute highp vec2 aTextureCoord;
+
+        uniform highp mat4 uNormalMatrix;
+        uniform highp mat4 uMovementMatrix;
+        uniform highp mat4 uPerspectiveMatrix;
+
+        uniform vec3 uCameraLightPosition;
+        uniform vec3 uOrbLightPosition;
+        uniform vec3 uOrbLightPositionOuter;
+
+        uniform bool uUseSimpleLightning;
+        uniform vec4 uLightSourcesPositions[16];
+        uniform mediump int uDynamicLightSourcesCount;
+
+        varying highp vec2 vTextureCoord;
+        varying vec3 vLightSourcesWorldPositions[16];
+        varying vec3 vNormal;
+        varying vec3 vSurfaceToLight;
+        varying vec3 vSurfaceToOrbLight;
+        varying vec3 vOrbLightWorldPositionOuter;
+        varying float vWeightedOrbLight;
+
+        void main(void) {
+            vec3 vertPos = vec3(uMovementMatrix * vec4(aVertexPosition, 1.0));
+
+            gl_Position = uPerspectiveMatrix * vec4(vertPos, 1.0);
+
+            vTextureCoord = aTextureCoord;
+
+            vNormal = vec3(uNormalMatrix * vec4(aVertexNormal, 1.0));
+
+            vSurfaceToLight = uCameraLightPosition - vertPos;
+
+            vOrbLightWorldPositionOuter = vec3(uMovementMatrix * vec4(uOrbLightPositionOuter, 1.0)) - vertPos;
+
+            vSurfaceToOrbLight = vec3(uMovementMatrix * vec4(uOrbLightPosition, 1.0)) - vertPos;
+
+            if (uUseSimpleLightning) {
+                vec3 normal = normalize(vNormal);
+                vec3 lightSourceWorldPosition;
+
+                float orbLightDistance;
+                float orbLight;
+                float weightedOrbLight;
+
+                vWeightedOrbLight = 0.0;
+
+                if (uDynamicLightSourcesCount > 0) {
+                    lightSourceWorldPosition = vec3(uMovementMatrix * uLightSourcesPositions[0]) - vertPos;
+                    orbLightDistance = length(lightSourceWorldPosition);
+                    orbLight = dot(normal, normalize(lightSourceWorldPosition));
+                    if (orbLight > 0.0) {
+                        // seed = 3/4
+                        // doubleDistance = length(lightSourceWorldPosition) * 2
+                        // result = seed / (doubleDistance * doubleDistance)
+                        // 0.185 = (3/4) / (2 * 2)
+                        vWeightedOrbLight += orbLight * (0.1875 / (orbLightDistance * orbLightDistance));
+                    }
+                }
+
+                if (uDynamicLightSourcesCount > 1) {
+                    lightSourceWorldPosition = vec3(uMovementMatrix * uLightSourcesPositions[1]) - vertPos;
+                    orbLightDistance = length(lightSourceWorldPosition);
+                    orbLight = dot(normal, normalize(lightSourceWorldPosition));
+                    if (orbLight > 0.0) {
+                        vWeightedOrbLight += orbLight * (0.1875 / (orbLightDistance * orbLightDistance));
+                    }
+                }
+
+                if (uDynamicLightSourcesCount > 2) {
+                    lightSourceWorldPosition = vec3(uMovementMatrix * uLightSourcesPositions[2]) - vertPos;
+                    orbLightDistance = length(lightSourceWorldPosition);
+                    orbLight = dot(normal, normalize(lightSourceWorldPosition));
+                    if (orbLight > 0.0) {
+                        vWeightedOrbLight += orbLight * (0.1875 / (orbLightDistance * orbLightDistance));
+                    }
+                }
+
+                if (uDynamicLightSourcesCount > 3) {
+                    lightSourceWorldPosition = vec3(uMovementMatrix * uLightSourcesPositions[3]) - vertPos;
+                    orbLightDistance = length(lightSourceWorldPosition);
+                    orbLight = dot(normal, normalize(lightSourceWorldPosition));
+                    if (orbLight > 0.0) {
+                        vWeightedOrbLight += orbLight * (0.1875 / (orbLightDistance * orbLightDistance));
+                    }
+                }
+
+                if (uDynamicLightSourcesCount > 4) {
+                    lightSourceWorldPosition = vec3(uMovementMatrix * uLightSourcesPositions[4]) - vertPos;
+                    orbLightDistance = length(lightSourceWorldPosition);
+                    orbLight = dot(normal, normalize(lightSourceWorldPosition));
+                    if (orbLight > 0.0) {
+                        vWeightedOrbLight += orbLight * (0.1875 / (orbLightDistance * orbLightDistance));
+                    }
+                }
+
+                if (uDynamicLightSourcesCount > 5) {
+                    lightSourceWorldPosition = vec3(uMovementMatrix * uLightSourcesPositions[5]) - vertPos;
+                    orbLightDistance = length(lightSourceWorldPosition);
+                    orbLight = dot(normal, normalize(lightSourceWorldPosition));
+                    if (orbLight > 0.0) {
+                        vWeightedOrbLight += orbLight * (0.1875 / (orbLightDistance * orbLightDistance));
+                    }
+                }
+
+                if (uDynamicLightSourcesCount > 6) {
+                    lightSourceWorldPosition = vec3(uMovementMatrix * uLightSourcesPositions[6]) - vertPos;
+                    orbLightDistance = length(lightSourceWorldPosition);
+                    orbLight = dot(normal, normalize(lightSourceWorldPosition));
+                    if (orbLight > 0.0) {
+                        vWeightedOrbLight += orbLight * (0.1875 / (orbLightDistance * orbLightDistance));
+                    }
+                }
+
+                if (uDynamicLightSourcesCount > 7) {
+                    lightSourceWorldPosition = vec3(uMovementMatrix * uLightSourcesPositions[7]) - vertPos;
+                    orbLightDistance = length(lightSourceWorldPosition);
+                    orbLight = dot(normal, normalize(lightSourceWorldPosition));
+                    if (orbLight > 0.0) {
+                        vWeightedOrbLight += orbLight * (0.1875 / (orbLightDistance * orbLightDistance));
+                    }
+                }
+
+                if (uDynamicLightSourcesCount > 8) {
+                    lightSourceWorldPosition = vec3(uMovementMatrix * uLightSourcesPositions[8]) - vertPos;
+                    orbLightDistance = length(lightSourceWorldPosition);
+                    orbLight = dot(normal, normalize(lightSourceWorldPosition));
+                    if (orbLight > 0.0) {
+                        vWeightedOrbLight += orbLight * (0.1875 / (orbLightDistance * orbLightDistance));
+                    }
+                }
+
+                if (uDynamicLightSourcesCount > 9) {
+                    lightSourceWorldPosition = vec3(uMovementMatrix * uLightSourcesPositions[9]) - vertPos;
+                    orbLightDistance = length(lightSourceWorldPosition);
+                    orbLight = dot(normal, normalize(lightSourceWorldPosition));
+                    if (orbLight > 0.0) {
+                        vWeightedOrbLight += orbLight * (0.1875 / (orbLightDistance * orbLightDistance));
+                    }
+                }
+
+                if (uDynamicLightSourcesCount > 10) {
+                    lightSourceWorldPosition = vec3(uMovementMatrix * uLightSourcesPositions[10]) - vertPos;
+                    orbLightDistance = length(lightSourceWorldPosition);
+                    orbLight = dot(normal, normalize(lightSourceWorldPosition));
+                    if (orbLight > 0.0) {
+                        vWeightedOrbLight += orbLight * (0.1875 / (orbLightDistance * orbLightDistance));
+                    }
+                }
+
+                if (uDynamicLightSourcesCount > 11) {
+                    lightSourceWorldPosition = vec3(uMovementMatrix * uLightSourcesPositions[11]) - vertPos;
+                    orbLightDistance = length(lightSourceWorldPosition);
+                    orbLight = dot(normal, normalize(lightSourceWorldPosition));
+                    if (orbLight > 0.0) {
+                        vWeightedOrbLight += orbLight * (0.1875 / (orbLightDistance * orbLightDistance));
+                    }
+                }
+
+                if (uDynamicLightSourcesCount > 12) {
+                    lightSourceWorldPosition = vec3(uMovementMatrix * uLightSourcesPositions[12]) - vertPos;
+                    orbLightDistance = length(lightSourceWorldPosition);
+                    orbLight = dot(normal, normalize(lightSourceWorldPosition));
+                    if (orbLight > 0.0) {
+                        vWeightedOrbLight += orbLight * (0.1875 / (orbLightDistance * orbLightDistance));
+                    }
+                }
+
+                if (uDynamicLightSourcesCount > 13) {
+                    lightSourceWorldPosition = vec3(uMovementMatrix * uLightSourcesPositions[13]) - vertPos;
+                    orbLightDistance = length(lightSourceWorldPosition);
+                    orbLight = dot(normal, normalize(lightSourceWorldPosition));
+                    if (orbLight > 0.0) {
+                        vWeightedOrbLight += orbLight * (0.1875 / (orbLightDistance * orbLightDistance));
+                    }
+                }
+
+                if (uDynamicLightSourcesCount > 14) {
+                    lightSourceWorldPosition = vec3(uMovementMatrix * uLightSourcesPositions[14]) - vertPos;
+                    orbLightDistance = length(lightSourceWorldPosition);
+                    orbLight = dot(normal, normalize(lightSourceWorldPosition));
+                    if (orbLight > 0.0) {
+                        vWeightedOrbLight += orbLight * (0.1875 / (orbLightDistance * orbLightDistance));
+                    }
+                }
+
+                if (uDynamicLightSourcesCount > 15) {
+                    lightSourceWorldPosition = vec3(uMovementMatrix * uLightSourcesPositions[15]) - vertPos;
+                    orbLightDistance = length(lightSourceWorldPosition);
+                    orbLight = dot(normal, normalize(lightSourceWorldPosition));
+                    if (orbLight > 0.0) {
+                        vWeightedOrbLight += orbLight * (0.1875 / (orbLightDistance * orbLightDistance));
+                    }
+                }
+            }
+            else {
+                vLightSourcesWorldPositions[0] = vec3(uMovementMatrix * uLightSourcesPositions[0]) - vertPos;
+                vLightSourcesWorldPositions[1] = vec3(uMovementMatrix * uLightSourcesPositions[1]) - vertPos;
+                vLightSourcesWorldPositions[2] = vec3(uMovementMatrix * uLightSourcesPositions[2]) - vertPos;
+                vLightSourcesWorldPositions[3] = vec3(uMovementMatrix * uLightSourcesPositions[3]) - vertPos;
+                vLightSourcesWorldPositions[4] = vec3(uMovementMatrix * uLightSourcesPositions[4]) - vertPos;
+                vLightSourcesWorldPositions[5] = vec3(uMovementMatrix * uLightSourcesPositions[5]) - vertPos;
+                vLightSourcesWorldPositions[6] = vec3(uMovementMatrix * uLightSourcesPositions[6]) - vertPos;
+                vLightSourcesWorldPositions[7] = vec3(uMovementMatrix * uLightSourcesPositions[7]) - vertPos;
+                vLightSourcesWorldPositions[8] = vec3(uMovementMatrix * uLightSourcesPositions[8]) - vertPos;
+                vLightSourcesWorldPositions[9] = vec3(uMovementMatrix * uLightSourcesPositions[9]) - vertPos;
+                vLightSourcesWorldPositions[10] = vec3(uMovementMatrix * uLightSourcesPositions[10]) - vertPos;
+                vLightSourcesWorldPositions[11] = vec3(uMovementMatrix * uLightSourcesPositions[11]) - vertPos;
+                vLightSourcesWorldPositions[12] = vec3(uMovementMatrix * uLightSourcesPositions[12]) - vertPos;
+                vLightSourcesWorldPositions[13] = vec3(uMovementMatrix * uLightSourcesPositions[13]) - vertPos;
+                vLightSourcesWorldPositions[14] = vec3(uMovementMatrix * uLightSourcesPositions[14]) - vertPos;
+                vLightSourcesWorldPositions[15] = vec3(uMovementMatrix * uLightSourcesPositions[15]) - vertPos;
+            }
+        }
+
+    </script>
+</head>
+
+<body onload="init()">
+<canvas id="glcanvas" width="640" height="480">
+    Your browser doesn't appear to support the HTML5 <code>&lt;canvas&gt;</code> element.
+</canvas>
+<div id="hud">
+    <input type="checkbox" id="lighting" checked/> Lighting
+    <input type="checkbox" id="flash-lighting" checked/> Flashlight
+</div>
+</body>
 </html>
