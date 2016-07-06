@@ -99,7 +99,7 @@ var SceneLoader = function() {
     }
 
     function loadDescriptor(objectID) {
-        return $.ajax({url: 'models/' + objectID + '/' + '_descriptor.json'});
+        return $.ajax({url: 'models/' + objectID + '/' + 'descriptor.json'});
     }
 
     function loadGeometry(objectID, fileName) {
