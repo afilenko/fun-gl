@@ -2,6 +2,9 @@
 <head>
     <title>FunGL</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link rel="stylesheet" type="text/css" href="css/main.css"/>
+    <link href='https://fonts.googleapis.com/css?family=Heebo:300' rel='stylesheet' type='text/css'>
+
     <script src="js/lib/jquery-3.0.0.min.js" type="text/javascript"></script>
     <script src="js/utils.js" type="text/javascript"></script>
     <script src="js/camera.js" type="text/javascript"></script>
@@ -15,21 +18,7 @@
     <script src="js/lib/sylvester.js" type="text/javascript"></script>
     <script src="js/lib/gl-utils.js" type="text/javascript"></script>
 
-    <style type="text/css">
-        body, html {
-            margin: 0;
-            padding: 0;
-        }
-
-        #hud {
-            position: absolute;
-            bottom: 20px;
-            color: #fff121;
-        }
-    </style>
-
     <!-- Fragment shader program -->
-
     <script id="shader-fs" type="x-shader/x-fragment">
         precision mediump float;
 
@@ -274,7 +263,6 @@
     </script>
 
     <!-- Vertex shader program -->
-
     <script id="shader-vs" type="x-shader/x-vertex">
         attribute highp vec3 aVertexNormal;
         attribute highp vec3 aVertexPosition;
@@ -497,12 +485,53 @@
 </head>
 
 <body onload="init()">
-<canvas id="glcanvas" width="640" height="480">
-    Your browser doesn't appear to support the HTML5 <code>&lt;canvas&gt;</code> element.
-</canvas>
-<div id="hud">
-    <input type="checkbox" id="lighting" checked/> Lighting
-    <input type="checkbox" id="flash-lighting" checked/> Flashlight
-</div>
+<!--<body>-->
+    <div id="preloader">
+        Loading...
+        <div id="underliner"></div>
+    </div>
+    <canvas id="glcanvas" width="640" height="480">
+        Your browser doesn't appear to support the HTML5 <code>&lt;canvas&gt;</code> element.
+    </canvas>
+    <div id="tutor">
+        <div id="tutor-popup">
+            <div id="tutor-title">Controls</div>
+            <div>
+                <span class="controls-name">W,S,A,D / arrows</span>
+                <span class="controls-dash"> - </span>
+                <span class="controls-action">movement</span>
+            </div>
+            <div>
+                <span class="controls-name">Mouse click</span>
+                <span class="controls-dash"> - </span>
+                <span class="controls-action">enable mouse view</span>
+            </div>
+            <div>
+                <span class="controls-name">Second click / mouse out</span>
+                <span class="controls-dash"> - </span>
+                <span class="controls-action">disable mouse view</span>
+            </div>
+            <div>
+                <span class="controls-name">Space</span>
+                <span class="controls-dash"> - </span>
+                <span class="controls-action">shoot glowing orb</span>
+            </div>
+            <div id="tutor-confirm">OK</div>
+            <label id="show-tutor-toggle-label">
+                <input type="checkbox" id="show-tutor-toggle" checked/>
+                Show tutorial
+            </label>
+        </div>
+    </div>
+    <div id="hud">
+        <label>
+            Lighting
+            <input type="checkbox" id="lighting" checked/>
+        </label>
+        <label style="visibility: hidden">
+            Flashlight
+            <input type="checkbox" id="flash-lighting" style="visibility: hidden" checked/>
+        </label>
+    </div>
 </body>
 </html>

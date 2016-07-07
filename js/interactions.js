@@ -22,23 +22,18 @@ function Interactions() {
     var _screenHeight;
     var _currentlyPressedKeys = {};
 
-    function _init() {
+    this.init = function() {
         $('#lighting').on('change', _toggleLights.bind(this));
         _canvas = $('#glcanvas');
-        $(document).on('click', _handleClick);
+        $(_canvas).on('click', _handleClick);
         $(document).on('keydown', _handleKeyDown);
         $(document).on('keyup', _handleKeyUp);
 
-// position test set spitfire
-//        _xPos = 1.2290590886879607;
-//        _zPos = 1.1954744001431246;
-//        _yaw = 45.90000000000001;
-// position test set car
-//        _xPos = 1.508611936275947;
-//        _zPos = 1.7182241670544385;
-//        _yaw = 39.70000000000001;
-        _zPos = 2.5;
-    }
+        // position test set
+        _xPos = 1.508611936275947;
+        _zPos = 1.7182241670544385;
+        _yaw = 39.70000000000001;
+    };
 
     this.setViewport = function(viewportParams) {
         _screenWidth = viewportParams.width;
@@ -84,7 +79,7 @@ function Interactions() {
         if (_currentlyPressedKeys[37] || _currentlyPressedKeys[65]) { // A or left arrow
             _strafeSpeed = 0.003;
         }
-        else if (_currentlyPressedKeys[39] || _currentlyPressedKeys[68]) { // B or right arrow
+        else if (_currentlyPressedKeys[39] || _currentlyPressedKeys[68]) { // D or right arrow
             _strafeSpeed = -0.003;
         }
         else { // none
@@ -92,7 +87,6 @@ function Interactions() {
         }
 
         if (_currentlyPressedKeys[38] || _currentlyPressedKeys[87]) { // W or up arrow
-            // Up cursor key or W
             _speed = 0.003;
         }
         else if (_currentlyPressedKeys[40] || _currentlyPressedKeys[83]) { // S or down arrow
@@ -105,13 +99,29 @@ function Interactions() {
     }
 
     function _handleMousePosition(elapsed) {
+        var dX;
+        var dZ;
+        var gap = 0.15;
+
         if (_speed != 0) {
-            _xPos -= Math.sin(degToRad(_yaw)) * _speed * elapsed;
-            _zPos -= Math.cos(degToRad(_yaw)) * _speed * elapsed;
+            dX = Math.sin(degToRad(_yaw)) * _speed * elapsed;
+            dZ = Math.cos(degToRad(_yaw)) * _speed * elapsed;
+            if (_xPos - dX > -3 + gap && _xPos - dX < 3 - gap) {
+                _xPos -= dX;
+            }
+            if (_zPos - dZ > -3 + gap && _zPos - dZ < 3 - gap) {
+                _zPos -= dZ;
+            }
         }
         if (_strafeSpeed != 0) {
-            _xPos -= Math.sin(degToRad(_yaw + 90)) * _strafeSpeed * elapsed;
-            _zPos -= Math.cos(degToRad(_yaw + 90)) * _strafeSpeed * elapsed;
+            dX = Math.sin(degToRad(_yaw + 90)) * _strafeSpeed * elapsed;
+            dZ = Math.cos(degToRad(_yaw + 90)) * _strafeSpeed * elapsed;
+            if (_xPos - dX > -3 + gap && _xPos - dX < 3 - gap) {
+                _xPos -= dX;
+            }
+            if (_zPos - dZ > -3 + gap && _zPos - dZ < 3 - gap) {
+                _zPos -= dZ;
+            }
         }
     }
 
@@ -155,6 +165,7 @@ function Interactions() {
             var lightningToggleCheckbox = $('#lighting');
             var useLightning = $(lightningToggleCheckbox).prop('checked');
             $(lightningToggleCheckbox).prop('checked', !useLightning);
+            _toggleLights();
         }
         
         // spacebar - shoot
@@ -222,6 +233,4 @@ function Interactions() {
     function _toggleLights() {
         _dispatch('toggleLightning', $('#lighting').prop('checked'));
     }
-
-    _init();
 }

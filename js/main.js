@@ -15,8 +15,12 @@ var Main = function () {
             _dynamicObjects = data.dynamicObjects;
             _renderer.start(_sceneObjects, _utils.getViewportParams());
             _renderer.toggleLightning(true);
-            _initInteractions();
-            _tick();
+            if (_utils.getCookie('show_tutor') == 'false') {
+                _startRendering();
+            }
+            else {
+                _showTutorial();
+            }
         });
     };
 
@@ -33,11 +37,51 @@ var Main = function () {
         _interactions = new Interactions();
     }
 
+    function _showTutorial() {
+        $('#preloader').fadeOut();
+        var tutor = $('#tutor');
+        $(tutor).fadeOut(0);
+        $(tutor).css('visibility', 'visible');
+        $(tutor).fadeIn();
+        $(document).on('keyup', _handleKeyPress);
+        $('#show-tutor-toggle').on('change', _onTutorToggleChange);
+        $('#tutor-confirm').on('click', _onTutorConfirm);
+    }
+
+    function _handleKeyPress(event) {
+        if (event.keyCode == 13) {
+            $(document).off('keyup', _handleKeyPress);
+            _onTutorConfirm();
+        }
+    }
+
+    function _onTutorToggleChange() {
+        var now = new Date();
+        var time = now.getTime();
+        var expireTime = time + 1000*3600*24*14;
+        now.setTime(expireTime);
+        var showTutorFlag = $('#show-tutor-toggle').prop('checked');
+        document.cookie = 'show_tutor=' + showTutorFlag + ';expires=' + now.toGMTString();
+    }
+
+    function _onTutorConfirm() {
+        $('#tutor').fadeOut();
+        $('#tutor-confirm').off('click', _onTutorConfirm);
+        _startRendering();
+    }
+
     function _initInteractions() {
+        _interactions.init();
         _interactions.on('toggleLightning', _onToggleLightning);
         _interactions.on('shoot', _onShoot);
         _interactions.setViewport(_utils.getViewportParams());
 
+    }
+
+    function _startRendering() {
+        $('#hud').css('display', 'block');
+        _initInteractions();
+        _tick();
     }
 
     function _onToggleLightning(value) {
