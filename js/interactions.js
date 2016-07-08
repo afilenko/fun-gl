@@ -24,6 +24,7 @@ function Interactions() {
 
     this.init = function() {
         $('#lighting').on('change', _toggleLights.bind(this));
+        //$('#action-button').on('click', _handleActionButton.bind(this));
         _canvas = $('#glcanvas');
         $(_canvas).on('click', _handleClick);
         $(document).on('keydown', _handleKeyDown);
@@ -232,5 +233,9 @@ function Interactions() {
 
     function _toggleLights() {
         _dispatch('toggleLightning', $('#lighting').prop('checked'));
+    }
+
+    function _handleActionButton() {
+        _dispatch('action');
     }
 }

@@ -91,7 +91,7 @@ var Renderer = function () {
             }
 
             for (var j = 0; j < mesh.parts.length; j++) {
-                if (mesh.wasAnimated) {
+                if (mesh.wasAnimated || mesh.parts[j].wasAnimated) {
                     _updatePartVerticesBuffer(mesh.parts[j], bufferIndex);
                 }
                 if (mesh.id != 'orb' && mesh.parts[j].alpha != undefined) {
