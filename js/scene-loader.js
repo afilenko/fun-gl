@@ -1,18 +1,16 @@
 var SceneLoader = function() {
 
-    //var sceneObjectsIDs = ['world'];
-    var sceneObjectsIDs = ['world', 'slr'];
-    //var sceneObjectsIDs = ['slr'];
-    var dynamicObjectsIDs = ['orb'];
+    var _sceneObjectsIDs = ['world', 'slr'];
+    var _dynamicObjectsIDs = ['orb'];
 
     this.loadAll = function() {
         var deferred = new $.Deferred();
         var sceneObjects;
         var dynamicObjects;
 
-        _loadObjectsByID(sceneObjectsIDs).done(function(data) {
+        _loadObjectsByID(_sceneObjectsIDs).done(function(data) {
             sceneObjects = data;
-            _loadObjectsByID(dynamicObjectsIDs).done(function(data) {
+            _loadObjectsByID(_dynamicObjectsIDs).done(function(data) {
                 dynamicObjects = data;
                 deferred.resolve({
                     sceneObjects: sceneObjects,
@@ -28,7 +26,7 @@ var SceneLoader = function() {
         var deferred = new $.Deferred();
         var loadedObjects = [];
         for (var i = 0; i < idList.length; i++) {
-            loadSceneObject(idList[i]).done(function(data) {
+            _loadSceneObject(idList[i]).done(function(data) {
                 loadedObjects.push(data);
                 if (loadedObjects.length == idList.length) {
                     deferred.resolve(loadedObjects);
@@ -38,20 +36,18 @@ var SceneLoader = function() {
         return deferred.promise();
     }
 
-
-    var counter = 20;
-    function loadSceneObject(id) {
+    function _loadSceneObject(id) {
         var deferred = new $.Deferred();
         var result = {
             id: id,
             parts: []
         };
-        loadDescriptor(id).done(function(data) {
+        _loadDescriptor(id).done(function(data) {
             var config = data;
             result.size = config.size;
             result.isLightSource = !!config.isLightSource;
             for (var i = 0; i < config.parts.length; i++) {
-                loadPart(id, config.parts[i]).done(function(data) {
+                _loadPart(id, config.parts[i]).done(function(data) {
                     result.parts.push(data);
                     if (result.parts.length == config.parts.length) {
                         var nonTransparentParts = [];
@@ -73,18 +69,20 @@ var SceneLoader = function() {
         return deferred.promise();
     }
 
-    function loadPart(objectID, part) {
+    function _loadPart(objectID, part) {
         var deferred = new $.Deferred();
         var result = {
             geometry: {},
             textureData: null,
             alpha: part.alpha
         };
-        loadGeometry(objectID, part.name).done(function (data) {
+        _loadGeometry(objectID, part.name).done(function (data) {
             result.geometry = data;
             result.name = part.name;
+            result.geometry.axis = _calcAxis(data);
+
             if (part.textureID) {
-                loadTexture(objectID, part.textureID).done(function(data) {
+                _loadTexture(objectID, part.textureID).done(function(data) {
                     result.textureData = data;
                     deferred.resolve(result);
                 });
@@ -98,15 +96,15 @@ var SceneLoader = function() {
         return deferred.promise();
     }
 
-    function loadDescriptor(objectID) {
+    function _loadDescriptor(objectID) {
         return $.ajax({url: 'models/' + objectID + '/' + 'descriptor.json'});
     }
 
-    function loadGeometry(objectID, fileName) {
+    function _loadGeometry(objectID, fileName) {
         return $.ajax({url: 'models/' + objectID + '/' + fileName + '.json'});
     }
 
-    function loadTexture(objectID, fileName) {
+    function _loadTexture(objectID, fileName) {
         var image = new Image();
         var deferred = new $.Deferred();
         $(image).on('load', function() {
@@ -114,5 +112,61 @@ var SceneLoader = function() {
         });
         image.src = 'textures/' + objectID + '/' + fileName + '.png';
         return deferred.promise();
+    }
+
+    function _calcAxis(geometry) {
+        var k = 0;
+        var minX = 2;
+        var minY = 2;
+        var minZ = 2;
+        var maxX = -2;
+        var maxY = -2;
+        var maxZ = -2;
+
+        for (var i = 0; i < geometry.vertices.length; i++) {
+            if (k == 0) {
+                if (geometry.vertices[i] < minX) {
+                    minX = geometry.vertices[i];
+                }
+                if (geometry.vertices[i] > maxX) {
+                    maxX = geometry.vertices[i];
+                }
+                k++;
+            }
+            else if (k == 1) {
+                if (geometry.vertices[i] < minY) {
+                    minY = geometry.vertices[i];
+                }
+                if (geometry.vertices[i] > maxY) {
+                    maxY = geometry.vertices[i];
+                }
+                k++;
+            }
+            else if (k == 2) {
+                if (geometry.vertices[i] < minZ) {
+                    minZ = geometry.vertices[i];
+                }
+                if (geometry.vertices[i] > maxZ) {
+                    maxZ = geometry.vertices[i];
+                }
+                k = 0;
+            }
+        }
+
+        var centerX = (maxX + minX) / 2;
+        var centerY = (maxY + minY) / 2;
+        var centerZ = (maxZ + minZ) / 2;
+        var oX = centerX + 1;
+        var oY = centerY + 1;
+        var oZ = centerZ + 1;
+
+        return {
+            x: centerX,
+            y: centerY,
+            z: centerZ,
+            oX: oX,
+            oY: oY,
+            oZ: oZ
+        };
     }
 };
