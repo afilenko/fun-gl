@@ -2,7 +2,7 @@ function Camera() {
 
     var _matrix;
 
-    this.getMatrix = function(params) {
+    this.getMatrix = function (params) {
         var pitch = params.pitch;
         var yaw = params.yaw;
         var position = params.position;

@@ -5,17 +5,21 @@ var Main = function () {
     var _physics;
     var _renderer;
     var _sceneLoader;
+    var _sceneObjectsStorage;
     var _interactions;
+    var _interactions3rdPerson;
+    var _carAnimationController;
     var _sceneObjects;
     var _dynamicObjects;
 
-    this.start = function() {
+    this.start = function () {
         _init();
         _sceneLoader.loadAll().done(function (data) {
             _sceneObjects = data.sceneObjects;
             _dynamicObjects = data.dynamicObjects;
             _renderer.start(_sceneObjects, _utils.getViewportParams());
             _renderer.toggleLightning(true);
+
             if (_utils.getCookie('show_tutor') == 'false') {
                 _startRendering();
             }
@@ -36,7 +40,10 @@ var Main = function () {
         _physics = new Physics();
         _renderer = new Renderer();
         _sceneLoader = new SceneLoader();
+        _sceneObjectsStorage = new SceneObjectsStorage();
         _interactions = new Interactions();
+        _interactions3rdPerson = new Interactions3rdPerson();
+        _carAnimationController = new CarAnimationController();
     }
 
     function _showTutorial() {
@@ -60,7 +67,7 @@ var Main = function () {
     function _onTutorToggleChange() {
         var now = new Date();
         var time = now.getTime();
-        var expireTime = time + 1000*3600*24*14;
+        var expireTime = time + 1000 * 3600 * 24 * 14;
         now.setTime(expireTime);
         var showTutorFlag = $('#show-tutor-toggle').prop('checked');
         document.cookie = 'show_tutor=' + showTutorFlag + ';expires=' + now.toGMTString();
@@ -72,18 +79,70 @@ var Main = function () {
         _startRendering();
     }
 
+    function _initSceneObjectsStorage() {
+        _sceneObjectsStorage.init(_sceneObjects);
+    }
+
     function _initInteractions() {
         _interactions.init();
         _interactions.on('toggleLightning', _onToggleLightning);
         _interactions.on('shoot', _onShoot);
-        _interactions.on('action', _onAction);
         _interactions.setViewport(_utils.getViewportParams());
+    }
 
+    function _initAnimation() {
+        _carAnimationController.init();
+
+        //// front-left wheel
+        //var tyre = _getPart('slr', 'tire_FL');
+        //var disk = _getPart('slr', 'disk_FL');
+        //var breakDiskRect = _getPart('slr', 'breakdisk_FL_rect');
+        //
+        //_animation.addElement(tyre, _getInitialRotationParams());
+        //_animation.addElement(disk, _getInitialRotationParams());
+        //_animation.addElement(breakDiskRect, _getInitialRotationParams());
+        //
+        //// front-right wheel
+        //tyre = _getPart('slr', 'tire_FR');
+        //disk = _getPart('slr', 'disk_FR');
+        //breakDiskRect = _getPart('slr', 'breakdisk_FR_rect');
+        //
+        //_animation.addElement(tyre, _getInitialRotationParams());
+        //_animation.addElement(disk, _getInitialRotationParams());
+        //_animation.addElement(breakDiskRect, _getInitialRotationParams());
+        //
+        //// rear-left wheel
+        //tyre = _getPart('slr', 'tire_RL');
+        //disk = _getPart('slr', 'disk_RL');
+        //breakDiskRect = _getPart('slr', 'breakdisk_RL_rect');
+        //
+        //_animation.addElement(tyre, _getInitialRotationParams());
+        //_animation.addElement(disk, _getInitialRotationParams());
+        //_animation.addElement(breakDiskRect, _getInitialRotationParams());
+        //
+        //// rear-right wheel
+        //tyre = _getPart('slr', 'tire_RR');
+        //disk = _getPart('slr', 'disk_RR');
+        //breakDiskRect = _getPart('slr', 'breakdisk_RR_rect');
+        //
+        //_animation.addElement(tyre, _getInitialRotationParams());
+        //_animation.addElement(disk, _getInitialRotationParams());
+        //_animation.addElement(breakDiskRect, _getInitialRotationParams());
+    }
+
+    function _getInitialRotationParams() {
+        return {
+            rotationX: 0,
+            rotationY: 0,
+            rotationZ: 0
+        };
     }
 
     function _startRendering() {
         $('#hud').css('display', 'block');
+        _initSceneObjectsStorage();
         _initInteractions();
+        _initAnimation();
         _tick();
     }
 
@@ -97,87 +156,77 @@ var Main = function () {
         _physics.addElement(orb, movementParams);
     }
 
+    //function _getMesh(meshId) {
+    //  return _sceneObjects.filter(function (mesh) {
+    //    return mesh.id == meshId;
+    //  })[0];
+    //}
+    //
+    //function _getPart (meshId, partName) {
+    //  var mesh = _sceneObjects.filter(function (mesh) {
+    //    return mesh.id == meshId;
+    //  })[0];
+    //
+    //  return mesh.parts.filter(function (part) {
+    //    return part.name == partName;
+    //  })[0];
+    //}
+
+
     function _onAction() {
         var tyreAnimationDistance = 0.4;
 
         // front-left wheel
         var tyre = _getPart('slr', 'tire_FL');
         var disk = _getPart('slr', 'disk_FL');
-        var brakes = _getPart('slr', 'brake_FL');
-        var breakDisk = _getPart('slr', 'breakdisk_FL');
+        //var brakes = _getPart('slr', 'brake_FL');
+        //var breakDisk = _getPart('slr', 'breakdisk_FL');
         var breakDiskRect = _getPart('slr', 'breakdisk_FL_rect');
 
         _animation.addElement(tyre, _buildElementAnimationParams(0.025, 0, 0, tyreAnimationDistance));
         _animation.addElement(disk, _buildElementAnimationParams(0.025, 0, 0, tyreAnimationDistance));
-        _animation.addElement(breakDisk, _buildElementAnimationParams(0.025, 0, 0, tyreAnimationDistance));
-        _animation.addElement(brakes, _buildElementAnimationParams(0.025, 0, 0, tyreAnimationDistance));
+        //_animation.addElement(breakDisk, _buildElementAnimationParams(0.025, 0, 0, tyreAnimationDistance));
+        //_animation.addElement(brakes, _buildElementAnimationParams(0.025, 0, 0, tyreAnimationDistance));
         _animation.addElement(breakDiskRect, _buildElementAnimationParams(0.025, 0, 0, tyreAnimationDistance));
 
         // front-right wheel
         tyre = _getPart('slr', 'tire_FR');
         disk = _getPart('slr', 'disk_FR');
-        brakes = _getPart('slr', 'brake_FR');
-        breakDisk = _getPart('slr', 'breakdisk_FR');
+        //brakes = _getPart('slr', 'brake_FR');
+        //breakDisk = _getPart('slr', 'breakdisk_FR');
         breakDiskRect = _getPart('slr', 'breakdisk_FR_rect');
 
         _animation.addElement(tyre, _buildElementAnimationParams(-0.025, 0, 0, tyreAnimationDistance));
         _animation.addElement(disk, _buildElementAnimationParams(-0.025, 0, 0, tyreAnimationDistance));
-        _animation.addElement(breakDisk, _buildElementAnimationParams(-0.025, 0, 0, tyreAnimationDistance));
-        _animation.addElement(brakes, _buildElementAnimationParams(-0.025, 0, 0, tyreAnimationDistance));
+        //_animation.addElement(breakDisk, _buildElementAnimationParams(-0.025, 0, 0, tyreAnimationDistance));
+        //_animation.addElement(brakes, _buildElementAnimationParams(-0.025, 0, 0, tyreAnimationDistance));
         _animation.addElement(breakDiskRect, _buildElementAnimationParams(-0.025, 0, 0, tyreAnimationDistance));
 
         // rear-left wheel
         tyre = _getPart('slr', 'tire_RL');
         disk = _getPart('slr', 'disk_RL');
-        brakes = _getPart('slr', 'brake_RL');
-        breakDisk = _getPart('slr', 'breakdisk_RL');
+        //brakes = _getPart('slr', 'brake_RL');
+        //breakDisk = _getPart('slr', 'breakdisk_RL');
         breakDiskRect = _getPart('slr', 'breakdisk_RL_rect');
 
         _animation.addElement(tyre, _buildElementAnimationParams(0.025, 0, 0, tyreAnimationDistance));
         _animation.addElement(disk, _buildElementAnimationParams(0.025, 0, 0, tyreAnimationDistance));
-        _animation.addElement(breakDisk, _buildElementAnimationParams(0.025, 0, 0, tyreAnimationDistance));
-        _animation.addElement(brakes, _buildElementAnimationParams(0.025, 0, 0, tyreAnimationDistance));
+        //_animation.addElement(breakDisk, _buildElementAnimationParams(0.025, 0, 0, tyreAnimationDistance));
+        //_animation.addElement(brakes, _buildElementAnimationParams(0.025, 0, 0, tyreAnimationDistance));
         _animation.addElement(breakDiskRect, _buildElementAnimationParams(0.025, 0, 0, tyreAnimationDistance));
 
         // rear-right wheel
         tyre = _getPart('slr', 'tire_RR');
         disk = _getPart('slr', 'disk_RR');
-        brakes = _getPart('slr', 'brake_RR');
-        breakDisk = _getPart('slr', 'breakdisk_RR');
+        //brakes = _getPart('slr', 'brake_RR');
+        //breakDisk = _getPart('slr', 'breakdisk_RR');
         breakDiskRect = _getPart('slr', 'breakdisk_RR_rect');
 
         _animation.addElement(tyre, _buildElementAnimationParams(-0.025, 0, 0, tyreAnimationDistance));
         _animation.addElement(disk, _buildElementAnimationParams(-0.025, 0, 0, tyreAnimationDistance));
-        _animation.addElement(breakDisk, _buildElementAnimationParams(-0.025, 0, 0, tyreAnimationDistance));
-        _animation.addElement(brakes, _buildElementAnimationParams(-0.025, 0, 0, tyreAnimationDistance));
+        //_animation.addElement(breakDisk, _buildElementAnimationParams(-0.025, 0, 0, tyreAnimationDistance));
+        //_animation.addElement(brakes, _buildElementAnimationParams(-0.025, 0, 0, tyreAnimationDistance));
         _animation.addElement(breakDiskRect, _buildElementAnimationParams(-0.025, 0, 0, tyreAnimationDistance));
-
-
-        // window-right wheel
-        var glassAnimationDistance = 0.1;
-
-        var lightGlass = _getPart('slr', 'headlight_L_glass');
-        _animation.addElement(lightGlass, _buildElementAnimationParams(0, 0.01, 0, glassAnimationDistance));
-
-        lightGlass = _getPart('slr', 'headlight_R_glass');
-        _animation.addElement(lightGlass, _buildElementAnimationParams(0, 0.01, 0, glassAnimationDistance));
-
-        lightGlass = _getPart('slr', 'rear_light_glass_L');
-        _animation.addElement(lightGlass, _buildElementAnimationParams(0, 0.01, 0, glassAnimationDistance));
-
-        lightGlass = _getPart('slr', 'rear_light_glass_R');
-        _animation.addElement(lightGlass, _buildElementAnimationParams(0, 0.01, 0, glassAnimationDistance));
-
-    }
-
-    function _getPart(meshId, partName) {
-        var mesh = _sceneObjects.filter(function(mesh) {
-            return mesh.id == meshId;
-        })[0];
-
-        return mesh.parts.filter(function(part) {
-            return part.name == partName;
-        })[0];
     }
 
     function _buildElementAnimationParams(dX, dY, dZ, maxDistance) {
@@ -203,7 +252,8 @@ var Main = function () {
         _interactions.updateCamera();
         _renderer.setCameraMatrix(_camera.getMatrix(_interactions.getCameraParams()));
         _physics.updateElements();
-        _animation.updateElements();
+        _carAnimationController.updateElements(_interactions.getMovementParams());
+        //_animation.updateElements(_interactions.getMovementParams());
         _renderer.setCameraPosition(_interactions.getCameraPosition());
     }
 

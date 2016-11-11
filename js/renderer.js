@@ -12,7 +12,7 @@ var Renderer = function () {
     var _isLightSourceUniform;
     var _dynamicLightSourcesCountUniform;
     var _applyLightingUniform;
-    
+
     var _cameraLightPositionUniform;
     var _perspectiveMatrixUniform;
     var _movementMatrixUniform;
@@ -29,7 +29,7 @@ var Renderer = function () {
 
     var _cameraPosition;
 
-    this.start = function(data, viewportParams) {
+    this.start = function (data, viewportParams) {
         _meshes = data;
         _initInstances();
         _initCanvas(viewportParams.width, viewportParams.height);
@@ -39,28 +39,28 @@ var Renderer = function () {
         _initScene();
     };
 
-    this.addMesh = function(mesh, movementParams) {
+    this.addMesh = function (mesh, movementParams) {
         mesh.movement = movementParams;
         _meshes.push(mesh);
         _initMeshBuffers(mesh);
     };
 
-    this.removeMesh = function(mesh) {
+    this.removeMesh = function (mesh) {
 
     };
 
-    this.setCameraPosition = function(position) {
+    this.setCameraPosition = function (position) {
         _cameraPosition = position;
     };
 
-    this.setCameraMatrix = function(cameraMatrix) {
+    this.setCameraMatrix = function (cameraMatrix) {
         _gl.uniformMatrix4fv(_movementMatrixUniform, false, new Float32Array(cameraMatrix.flatten()));
         var normalMatrix = cameraMatrix.inverse();
         normalMatrix = normalMatrix.transpose();
         _gl.uniformMatrix4fv(_normalMatrixUniform, false, new Float32Array(normalMatrix.flatten()));
     };
 
-    this.render = function() {
+    this.render = function () {
         _gl.clear(_gl.COLOR_BUFFER_BIT | _gl.DEPTH_BUFFER_BIT);
 
         _disableAlphaBlend();
@@ -223,9 +223,13 @@ var Renderer = function () {
         var verticesBuffer = _verticesBuffer[bufferIndex];
         _gl.bindBuffer(_gl.ARRAY_BUFFER, verticesBuffer);
         _gl.bufferSubData(_gl.ARRAY_BUFFER, 0, new Float32Array(part.geometry.updatedVertices));
+
+        var normalsBuffer = _normalsBuffer[bufferIndex];
+        _gl.bindBuffer(_gl.ARRAY_BUFFER, normalsBuffer);
+        _gl.bufferSubData(_gl.ARRAY_BUFFER, 0, new Float32Array(part.geometry.updatedNormals));
     }
 
-    this.toggleLightning = function(value) {
+    this.toggleLightning = function (value) {
         _gl.uniform1i(_applyLightingUniform, value);
     };
 
@@ -245,7 +249,7 @@ var Renderer = function () {
             _gl.viewportWidth = _canvas.width;
             _gl.viewportHeight = _canvas.height;
         }
-        catch(e) {
+        catch (e) {
             console.log(e.message);
         }
 
@@ -382,7 +386,7 @@ var Renderer = function () {
         var theSource = "";
         var currentChild = shaderScript.firstChild;
 
-        while(currentChild) {
+        while (currentChild) {
             if (currentChild.nodeType == 3) {
                 theSource += currentChild.textContent;
             }

@@ -1,16 +1,16 @@
-var SceneLoader = function() {
+var SceneLoader = function () {
 
     var _sceneObjectsIDs = ['world', 'slr'];
     var _dynamicObjectsIDs = ['orb'];
 
-    this.loadAll = function() {
+    this.loadAll = function () {
         var deferred = new $.Deferred();
         var sceneObjects;
         var dynamicObjects;
 
-        _loadObjectsByID(_sceneObjectsIDs).done(function(data) {
+        _loadObjectsByID(_sceneObjectsIDs).done(function (data) {
             sceneObjects = data;
-            _loadObjectsByID(_dynamicObjectsIDs).done(function(data) {
+            _loadObjectsByID(_dynamicObjectsIDs).done(function (data) {
                 dynamicObjects = data;
                 deferred.resolve({
                     sceneObjects: sceneObjects,
@@ -26,7 +26,7 @@ var SceneLoader = function() {
         var deferred = new $.Deferred();
         var loadedObjects = [];
         for (var i = 0; i < idList.length; i++) {
-            _loadSceneObject(idList[i]).done(function(data) {
+            _loadSceneObject(idList[i]).done(function (data) {
                 loadedObjects.push(data);
                 if (loadedObjects.length == idList.length) {
                     deferred.resolve(loadedObjects);
@@ -42,12 +42,12 @@ var SceneLoader = function() {
             id: id,
             parts: []
         };
-        _loadDescriptor(id).done(function(data) {
+        _loadDescriptor(id).done(function (data) {
             var config = data;
             result.size = config.size;
             result.isLightSource = !!config.isLightSource;
             for (var i = 0; i < config.parts.length; i++) {
-                _loadPart(id, config.parts[i]).done(function(data) {
+                _loadPart(id, config.parts[i]).done(function (data) {
                     result.parts.push(data);
                     if (result.parts.length == config.parts.length) {
                         var nonTransparentParts = [];
@@ -82,7 +82,7 @@ var SceneLoader = function() {
             result.geometry.axis = _calcAxis(data);
 
             if (part.textureID) {
-                _loadTexture(objectID, part.textureID).done(function(data) {
+                _loadTexture(objectID, part.textureID).done(function (data) {
                     result.textureData = data;
                     deferred.resolve(result);
                 });
@@ -107,7 +107,7 @@ var SceneLoader = function() {
     function _loadTexture(objectID, fileName) {
         var image = new Image();
         var deferred = new $.Deferred();
-        $(image).on('load', function() {
+        $(image).on('load', function () {
             deferred.resolve(image);
         });
         image.src = 'textures/' + objectID + '/' + fileName + '.png';
@@ -159,6 +159,26 @@ var SceneLoader = function() {
         var oX = centerX + 1;
         var oY = centerY + 1;
         var oZ = centerZ + 1;
+
+        geometry.relativeVertices = [];
+        geometry.relativeNormals = [];
+        k = 0;
+        var center;
+        for (i = 0; i < geometry.vertices.length; i++) {
+            k++;
+            if (k == 1) {
+                center = centerX;
+            }
+            else if (k == 2) {
+                center = centerY;
+            }
+            else if (k == 3) {
+                center = centerZ;
+                k = 0;
+            }
+            geometry.relativeVertices.push(geometry.vertices[i] - center);
+            geometry.relativeNormals.push(geometry.vertices[i] + geometry.normals[i] - center);
+        }
 
         return {
             x: centerX,

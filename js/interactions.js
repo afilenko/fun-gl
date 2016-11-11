@@ -9,6 +9,9 @@ function Interactions() {
     var _strafeSpeed = 0;
     var _speed = 0;
 
+    var _steeringDirection = null;
+    var _movementDirection = null;
+
     var EYE_POS = 0.5;
     var _xPos = 0;
     var _yPos = EYE_POS;
@@ -22,9 +25,8 @@ function Interactions() {
     var _screenHeight;
     var _currentlyPressedKeys = {};
 
-    this.init = function() {
+    this.init = function () {
         $('#lighting').on('change', _toggleLights.bind(this));
-        //$('#action-button').on('click', _handleActionButton.bind(this));
         _canvas = $('#glcanvas');
         $(_canvas).on('click', _handleClick);
         $(document).on('keydown', _handleKeyDown);
@@ -36,12 +38,12 @@ function Interactions() {
         _yaw = 39.70000000000001;
     };
 
-    this.setViewport = function(viewportParams) {
+    this.setViewport = function (viewportParams) {
         _screenWidth = viewportParams.width;
         _screenHeight = viewportParams.height;
     };
 
-    this.on = function(eventName, handler) {
+    this.on = function (eventName, handler) {
         var listener = {
             eventName: eventName,
             eventHandler: handler
@@ -49,7 +51,7 @@ function Interactions() {
         _eventListeners.push(listener);
     };
 
-    this.updateCamera = function() {
+    this.updateCamera = function () {
         var timeNow = new Date().getTime();
 
         if (_lastUpdateTime != 0) {
@@ -60,7 +62,7 @@ function Interactions() {
         _lastUpdateTime = timeNow;
     };
 
-    this.getCameraParams = function() {
+    this.getCameraParams = function () {
         return {
             yaw: _yaw,
             pitch: _pitch,
@@ -68,7 +70,7 @@ function Interactions() {
         }
     };
 
-    this.getCameraPosition = function() {
+    this.getCameraPosition = function () {
         return {
             x: _xPos,
             y: _yPos,
@@ -76,28 +78,76 @@ function Interactions() {
         };
     };
 
+    this.getMovementParams = function () {
+        return {
+            steering: _steeringDirection,
+            direction: _movementDirection
+        };
+    };
+
     function _handleMovementControls() {
-        if (_currentlyPressedKeys[37] || _currentlyPressedKeys[65]) { // A or left arrow
+        if (_currentlyPressedKeys[65]) { // A
             _strafeSpeed = 0.003;
         }
-        else if (_currentlyPressedKeys[39] || _currentlyPressedKeys[68]) { // D or right arrow
+        else if (_currentlyPressedKeys[68]) { // D
             _strafeSpeed = -0.003;
         }
         else { // none
             _strafeSpeed = 0;
         }
 
-        if (_currentlyPressedKeys[38] || _currentlyPressedKeys[87]) { // W or up arrow
+        if (_currentlyPressedKeys[87]) { // W
             _speed = 0.003;
         }
-        else if (_currentlyPressedKeys[40] || _currentlyPressedKeys[83]) { // S or down arrow
+        else if (_currentlyPressedKeys[83]) { // S
             _speed = -0.003;
         }
         else { // none
             _speed = 0;
         }
 
+        if (_currentlyPressedKeys[37]) { // left arrow
+            _steeringDirection = 1;
+        }
+        else if (_currentlyPressedKeys[39]) { // right arrow
+            _steeringDirection = -1;
+        }
+        else { // none
+            _steeringDirection = 0;
+        }
+
+        if (_currentlyPressedKeys[38]) { // up arrow
+            _movementDirection = 1;
+        }
+        else if (_currentlyPressedKeys[40]) { // down arrow
+            _movementDirection = -1;
+        }
+        else { // none
+            _movementDirection = 0;
+        }
     }
+
+    //function _handleMovementControls() {
+    //    if (_currentlyPressedKeys[37] || _currentlyPressedKeys[65]) { // A or left arrow
+    //        _strafeSpeed = 0.003;
+    //    }
+    //    else if (_currentlyPressedKeys[39] || _currentlyPressedKeys[68]) { // D or right arrow
+    //        _strafeSpeed = -0.003;
+    //    }
+    //    else { // none
+    //        _strafeSpeed = 0;
+    //    }
+    //
+    //    if (_currentlyPressedKeys[38] || _currentlyPressedKeys[87]) { // W or up arrow
+    //        _speed = 0.003;
+    //    }
+    //    else if (_currentlyPressedKeys[40] || _currentlyPressedKeys[83]) { // S or down arrow
+    //        _speed = -0.003;
+    //    }
+    //    else { // none
+    //        _speed = 0;
+    //    }
+    //}
 
     function _handleMousePosition(elapsed) {
         var dX;
@@ -105,8 +155,8 @@ function Interactions() {
         var gap = 0.15;
 
         if (_speed != 0) {
-            dX = Math.sin(degToRad(_yaw)) * _speed * elapsed;
-            dZ = Math.cos(degToRad(_yaw)) * _speed * elapsed;
+            dX = Math.sin(_degToRad(_yaw)) * _speed * elapsed;
+            dZ = Math.cos(_degToRad(_yaw)) * _speed * elapsed;
             if (_xPos - dX > -3 + gap && _xPos - dX < 3 - gap) {
                 _xPos -= dX;
             }
@@ -115,8 +165,8 @@ function Interactions() {
             }
         }
         if (_strafeSpeed != 0) {
-            dX = Math.sin(degToRad(_yaw + 90)) * _strafeSpeed * elapsed;
-            dZ = Math.cos(degToRad(_yaw + 90)) * _strafeSpeed * elapsed;
+            dX = Math.sin(_degToRad(_yaw + 90)) * _strafeSpeed * elapsed;
+            dZ = Math.cos(_degToRad(_yaw + 90)) * _strafeSpeed * elapsed;
             if (_xPos - dX > -3 + gap && _xPos - dX < 3 - gap) {
                 _xPos -= dX;
             }
@@ -126,7 +176,7 @@ function Interactions() {
         }
     }
 
-    function degToRad(degrees) {
+    function _degToRad(degrees) {
         return degrees * Math.PI / 180;
     }
 
@@ -160,7 +210,7 @@ function Interactions() {
             var useFlashLight = $(flashLightToggleCheckbox).prop('checked');
             $(flashLightToggleCheckbox).prop('checked', !useFlashLight);
         }
-        
+
         // L - toggle lightning
         if (event.keyCode == 76) {
             var lightningToggleCheckbox = $('#lighting');
@@ -168,13 +218,13 @@ function Interactions() {
             $(lightningToggleCheckbox).prop('checked', !useLightning);
             _toggleLights();
         }
-        
+
         // spacebar - shoot
         if (event.keyCode == 32) {
             var ANIMATION_STEP = 0.035;
-            var dX = -Math.sin(degToRad(_yaw));
-            var dY = Math.sin(degToRad(_pitch));
-            var dZ = -Math.cos(degToRad(_yaw));
+            var dX = -Math.sin(_degToRad(_yaw));
+            var dY = Math.sin(_degToRad(_pitch));
+            var dZ = -Math.cos(_degToRad(_yaw));
 
             var x = _xPos + dX;
             var y = _yPos + dY;

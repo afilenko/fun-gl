@@ -1,12 +1,12 @@
 function Physics() {
     var elements = [];
 
-    this.addElement = function(element, movement) {
+    this.addElement = function (element, movement) {
         element.movement = movement;
         elements.push(element);
     };
 
-    this.updateElements = function() {
+    this.updateElements = function () {
         for (var i = 0; i < elements.length; i++) {
             var element = elements[i];
             _processCollisions(element);
@@ -73,10 +73,10 @@ function Physics() {
     function _reflectElement(element, n) {
         var a = [element.movement.dX, element.movement.dY, element.movement.dZ];
         var b = {};
-        var k = n[0] * a[0] +n[1] * a[1] + n[2] * a[2];
-        b[0] = a[0] + n[0] * k *-2.0;
-        b[1] = a[1] + n[1] * k *-2.0;
-        b[2] = a[2] + n[2] * k *-2.0;
+        var k = n[0] * a[0] + n[1] * a[1] + n[2] * a[2];
+        b[0] = a[0] + n[0] * k * -2.0;
+        b[1] = a[1] + n[1] * k * -2.0;
+        b[2] = a[2] + n[2] * k * -2.0;
 
         element.movement.dX = b[0];
         element.movement.dY = b[1];
