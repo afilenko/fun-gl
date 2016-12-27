@@ -18,7 +18,6 @@ function Interactions() {
     var _zPos = 0;
     var _lastUpdateTime;
 
-    var _doTrackMouse = false;
     var _screenCenterX;
     var _screenCenterY;
     var _screenWidth;
@@ -28,7 +27,17 @@ function Interactions() {
     this.init = function () {
         $('#lighting').on('change', _toggleLights.bind(this));
         _canvas = $('#glcanvas');
-        $(_canvas).on('click', _handleClick);
+
+        document.getElementsByTagName("canvas")[0].addEventListener("click", function() {
+            if (!document.pointerLockElement) {
+                _updateCursorPosition(event.pageX, event.pageY);
+                this.requestPointerLock = this.requestPointerLock || this.mozRequestPointerLock;
+                this.requestPointerLock();
+                document.addEventListener('mousemove', _handleMouseMove);
+            }
+        }, false);
+
+
         $(document).on('keydown', _handleKeyDown);
         $(document).on('keyup', _handleKeyUp);
 
@@ -180,26 +189,13 @@ function Interactions() {
         return degrees * Math.PI / 180;
     }
 
-    function _handleClick(event) {
-        _updateCursorPosition(event.pageX, event.pageY);
-        _toggleTrackMouse(!_doTrackMouse);
-    }
-
-    function _handleMouseOut(event) {
-        _toggleTrackMouse(false);
-    }
-
     function _handleMouseMove(event) {
-        var pageX = event.pageX;
-        var pageY = event.pageY;
+        if (document.pointerLockElement) {
+            var movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
+            var movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
 
-        if (_isMouseInBounds(pageX, pageY)) {
-            _yaw += 0.2 * (_screenCenterX - pageX);
-            _pitch += 0.2 * (_screenCenterY - pageY);
-            _updateCursorPosition(pageX, pageY);
-        }
-        else {
-            _handleMouseOut();
+            _yaw += 0.2 * (-movementX);
+            _pitch += 0.2 * (-movementY);
         }
     }
 
@@ -253,24 +249,6 @@ function Interactions() {
     function _updateCursorPosition(pageX, pageY) {
         _screenCenterX = pageX;
         _screenCenterY = pageY;
-    }
-
-    function _isMouseInBounds(pageX, pageY) {
-        return pageX < _screenWidth - 10 && pageX > 10 && pageY < _screenHeight - 10 && pageY > 10;
-    }
-
-    function _toggleTrackMouse(doTrack) {
-        $(_canvas).css('cursor', doTrack ? 'none' : 'auto');
-        _doTrackMouse = doTrack;
-
-        if (_doTrackMouse) {
-            $(document).on('mousemove', _handleMouseMove);
-            $(document).on('mouseout', _handleMouseOut);
-        }
-        else {
-            $(document).off('mousemove', _handleMouseMove);
-            $(document).off('mouseout', _handleMouseOut);
-        }
     }
 
     function _dispatch(eventName, data) {
