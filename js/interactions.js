@@ -26,7 +26,17 @@ function Interactions() {
         $('#lighting').on('change', _toggleLights.bind(this));
         //$('#action-button').on('click', _handleActionButton.bind(this));
         _canvas = $('#glcanvas');
-        $(_canvas).on('click', _handleClick);
+
+        document.getElementsByTagName("canvas")[0].addEventListener("click", function() {
+            if (!document.pointerLockElement) {
+                _updateCursorPosition(event.pageX, event.pageY);
+                this.requestPointerLock = this.requestPointerLock || this.mozRequestPointerLock;
+                this.requestPointerLock();
+                document.addEventListener('mousemove', _handleMouseMove);
+            }
+        }, false);
+
+
         $(document).on('keydown', _handleKeyDown);
         $(document).on('keyup', _handleKeyUp);
 
@@ -140,16 +150,12 @@ function Interactions() {
     }
 
     function _handleMouseMove(event) {
-        var pageX = event.pageX;
-        var pageY = event.pageY;
+        if (document.pointerLockElement) {
+            var movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
+            var movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
 
-        if (_isMouseInBounds(pageX, pageY)) {
-            _yaw += 0.2 * (_screenCenterX - pageX);
-            _pitch += 0.2 * (_screenCenterY - pageY);
-            _updateCursorPosition(pageX, pageY);
-        }
-        else {
-            _handleMouseOut();
+            _yaw += 0.2 * (-movementX);
+            _pitch += 0.2 * (-movementY);
         }
     }
 
